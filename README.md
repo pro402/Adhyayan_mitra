@@ -2,7 +2,7 @@
 
     1.1. Pre-requisits:
 
-        1.1.1. sudo apt install python3-venv
+    - sudo apt install python3-venv
 
     1.2. python3 -m venv .venv
 
@@ -18,9 +18,9 @@
 
     Jupyter kernel:
 
->    python -m ipykernel install --user --name=your_env_name
+    >    python -m ipykernel install --user --name=your_env_name
 
-Replace "your_env_name" with a descriptive name for your environment
+    Replace "your_env_name" with a descriptive name for your environment
 
 4. Creating the audio recorder component (for python) or we can use the android 
 recorder API to do so aswell (simply records audio in .mp3 format)
