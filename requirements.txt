@@ -1,0 +1,16 @@
+ipykernel
+sounddevice
+numpy
+pydub
+transformers
+torch
+ipywidgets
+librosa
+langchain
+langchain-core
+langchain-huggingface
+docling
+langchain-ollama
+beautifulsoup4
+selenium
+pandas
