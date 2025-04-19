@@ -13,8 +13,4 @@ docling
 langchain-ollama
 beautifulsoup4
 selenium
-<<<<<<< HEAD
 pandas
-=======
-pandas
->>>>>>> 6f06661ab179d0fad72946f07bfd70154ddd18a2
