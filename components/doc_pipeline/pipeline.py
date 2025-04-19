@@ -29,21 +29,60 @@ class DocumentProcessor:
             model = "hf.co/mradermacher/Qwen2.5-0.5B-Instruct-GGUF:Q8_0",
             temperature=0,
         )
+        # self.summarize_template = """
+        # You are tasked with summarizing a document in a clear, concise, and professional manner. 
+        # Your summary should retain all critical information while eliminating unnecessary details. 
+
+        # To guide your approach, here is an example:
+        # Document:
+        # {ex_text}
+        # Summary:
+        # {ex_summarized_text}
+
+        # Now, summarize the following document:
+        # {text}
+
+        # Make sure the response is in Markdown format.
+        # """
+
         self.summarize_template = """
-        You are tasked with summarizing a document in a clear, concise, and professional manner. 
-        Your summary should retain all critical information while eliminating unnecessary details. 
+You are an expert educational content curator specializing in creating detailed study materials. Your task is to transform the provided notes into a thorough yet optimized version that retains nearly all educational value while improving structure and readability.
 
-        To guide your approach, here is an example:
-        Document:
-        {ex_text}
-        Summary:
-        {ex_summarized_text}
+COMPREHENSIVE SUMMARIZATION GUIDELINES:
 
-        Now, summarize the following document:
-        {text}
+1. CONTENT PRESERVATION:
+   - Retain 85-90% of all key information and concepts
+   - Preserve ALL definitions, theorems, formulas, and core principles
+   - Keep ALL numerical examples, case studies, and practical applications
+   - Maintain ALL critical relationships between concepts
+   - Include ALL lists of important points, steps, or classifications
 
-        Make sure the response is in Markdown format.
-        """
+2. OPTIMIZATION TECHNIQUES:
+   - Condense verbose explanations without removing their substantive content
+   - Convert lengthy paragraphs into structured bullet points where appropriate
+   - Use tables to organize comparative information more efficiently
+   - Standardize terminology and eliminate unnecessary repetition
+   - Merge similar examples while preserving their distinct educational points
+
+3. STRUCTURAL ENHANCEMENTS:
+   - Organize content with clear hierarchical headings (##, ###)
+   - Create visual separation between major topics
+   - Use bold formatting for key terms and concepts
+   - Employ numbered lists for sequential processes
+   - Add section summaries for complex topics
+
+4. EDUCATIONAL INTEGRITY:
+   - Never sacrifice accuracy for brevity
+   - Maintain the original pedagogical flow and logical progression
+   - Preserve nuance in complex explanations
+   - Retain cautionary notes and exception cases
+   - Keep all citations and references to external sources
+
+INPUT NOTES:
+{text}
+
+Create a comprehensive educational resource in Markdown format that preserves nearly all educational value while enhancing structure and readability. This should serve as a complete study resource that students can rely on for thorough understanding and revision.
+"""
         self.summarize_prompt = PromptTemplate.from_template(self.summarize_template)
     
     def convert_to_markdown(self, file_path=None):
@@ -100,7 +139,6 @@ class DocumentProcessor:
             "ex_summarized_text": ex_summarized_text,
             "text": input_text
         })
-
         pattern = r"```markdown\n(.*?)$"
         result = re.search(pattern, text, re.DOTALL)
 
@@ -120,17 +158,23 @@ class DocumentProcessor:
             file_path (str, optional): Path to the document. If None, will prompt user for input.
             
         Returns:
-            str: Processed document content
+            str: Processed document content or error message
         """
         text = self.convert_to_markdown(file_path)
+        token_count = self.count_tokens(text)
         
-        while self.count_tokens(text) >= self.max_tokens:
-            print(f"Document exceeds {self.max_tokens} tokens. Summarizing...")
+        if token_count > 5000:
+            return f"Text is Too large to process {token_count} Tokens"
+        elif token_count > 2000 and token_count <= 5000:
+            print(f"Document has {token_count} tokens. Summarizing...")
             text = self.summarize(text)
+        else:
+            # For documents with <= 2000 tokens, use the raw text
+            print(f"Document has {token_count} tokens. Using raw document.")
             
         return text
 
-# # Usage example
+# Usage example
 # if __name__ == "__main__":
 #     processor = DocumentProcessor()
 #     result = processor.process_document()
