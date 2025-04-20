@@ -4,7 +4,7 @@ from transformers import AutoTokenizer
 from langchain_core.prompts import PromptTemplate
 from langchain_ollama.llms import OllamaLLM
 from docling.document_converter import DocumentConverter
-from .doc_ex import ex_summarized_text, ex_text
+# from .doc_ex import ex_summarized_text, ex_text
 
 class DocumentProcessor:
     """
@@ -135,8 +135,8 @@ Create a comprehensive educational resource in Markdown format that preserves ne
         """
         chain = self.summarize_prompt | self.llm
         text = chain.invoke({
-            "ex_text": ex_text,
-            "ex_summarized_text": ex_summarized_text,
+            # "ex_text": ex_text,
+            # "ex_summarized_text": ex_summarized_text,
             "text": input_text
         })
         pattern = r"```markdown\n(.*?)$"
