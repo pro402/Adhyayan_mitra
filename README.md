@@ -33,7 +33,7 @@ recorder API to do so aswell (simply records audio in .mp3 format)
 
     7.1 Install 2 Ollama Models 
 
-- ollama pull hf.co/mradermacher/Qwen2.5-0.5B-Instruct-GGUF:Q8_0
+    - ollama pull hf.co/mradermacher/Qwen2.5-0.5B-Instruct-GGUF:Q8_0
 
-- ollama run qwen2.5:0.5b
+    - ollama run qwen2.5:0.5b
 
