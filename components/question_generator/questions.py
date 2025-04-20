@@ -53,7 +53,7 @@ def question_gen(llm, doc_result, trans_result, analysis):
   chain = question_gen_prompt | llm
   questions = chain.invoke({"doc1": doc_result, "doc2":trans_result, "doc3": analysis})
 
-  if llm.model == "models/gemma-3-27b-it":
+  if llm.model in ["models/gemma-3-27b-it","models/gemini-2.0-flash-lite"]:
       return extract_python_list(questions.content)
   else:
       return extract_python_list(questions)
