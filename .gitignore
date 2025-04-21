@@ -7,4 +7,4 @@
 /components/question_generator/__pycache__
 /components/select_llm/__pycache__
 /components/transcripter_api/__pycache__
-components/whisper/__pycache__
+/components/whisper/__pycache__
