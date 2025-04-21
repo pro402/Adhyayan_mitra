@@ -1,3 +1,10 @@
 /.venv
 /testing/.env
-/components/select_llm/.env
+/components/audio_recorder/__pycache__
+/components/doc_pipeline/__pycache__
+/components/gap_analyzer/__pycache__
+/components/qna_judge/__pycache__
+/components/question_generator/__pycache__
+/components/select_llm/__pycache__
+/components/transcripter_api/__pycache__
+components/whisper/__pycache__
