@@ -124,7 +124,7 @@ def qna_check_and_scoring(llm: BaseChatModel, doc_result: str, trans_result: str
 
     # Assuming the LLM response is in the .content attribute for models like Gemma
     # Adjust this based on the specific Langchain LLM wrapper you use
-    if llm.model in ["models/gemma-3-27b-it","models/gemini-2.0-flash-lite"]:
+    if llm.model in ["models/gemma-3-27b-it","models/gemini-2.0-flash-lite","models/gemini-2.0-flash"]:
        return judge.content
     else:
        return judge

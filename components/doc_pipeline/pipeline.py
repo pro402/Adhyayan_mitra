@@ -2,8 +2,8 @@ from pathlib import Path
 import re
 from transformers import AutoTokenizer
 from langchain_core.prompts import PromptTemplate
-from langchain_ollama.llms import OllamaLLM
 from docling.document_converter import DocumentConverter
+from ..select_llm import llama_cpp, ollama
 # from .doc_ex import ex_summarized_text, ex_text
 
 class DocumentProcessor:
@@ -24,11 +24,16 @@ class DocumentProcessor:
         """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.max_tokens = max_tokens
-        self.llm = OllamaLLM(
-            # model="qwen2.5:0.5b",
-            model = "hf.co/mradermacher/Qwen2.5-0.5B-Instruct-GGUF:Q8_0",
-            temperature=0,
-        )
+        
+        selector = input("Select summarizer Ollama or LLama.CPP: \n")
+
+        if selector.lower() == "ollama":
+            self.llm = ollama.set_llm()
+        elif selector.lower() in ["llama", "llama cpp", "llamacpp", "llama_cpp", "cpp"]:
+            self.llm = llama_cpp.set_llm()
+        else:
+            raise ValueError(f"Unsupported LLM backend: {selector}. Choose from 'ollama' or 'llama_cpp'.")
+        
         # self.summarize_template = """
         # You are tasked with summarizing a document in a clear, concise, and professional manner. 
         # Your summary should retain all critical information while eliminating unnecessary details. 

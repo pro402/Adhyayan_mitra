@@ -13,3 +13,7 @@ langchain-ollama
 langchain-google-genai
 docling
 pandas
+optimum
+huggingface_hub
+llama-cpp-python 
+langchain-community
