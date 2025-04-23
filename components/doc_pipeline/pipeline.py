@@ -14,25 +14,21 @@ class DocumentProcessor:
     - Summarizing content
     """
     
-    def __init__(self, model_name="Qwen/Qwen2.5-0.5B-Instruct", max_tokens=2000):
+    def __init__(self, llm, provider, model_name="Qwen/Qwen2.5-0.5B-Instruct", max_tokens=2000):
         """
         Initialize the document processor with specified parameters
         
         Args:
+            llm: The language model to use for summarization
+            provider: The provider for the language model
             model_name (str): The name of the tokenizer model to use
             max_tokens (int): Maximum number of tokens allowed before summarization
         """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.max_tokens = max_tokens
         
-        selector = input("Select summarizer Ollama or LLama.CPP: \n")
-
-        if selector.lower() == "ollama":
-            self.llm = ollama.set_llm()
-        elif selector.lower() in ["llama", "llama cpp", "llamacpp", "llama_cpp", "cpp"]:
-            self.llm = llama_cpp.set_llm()
-        else:
-            raise ValueError(f"Unsupported LLM backend: {selector}. Choose from 'ollama' or 'llama_cpp'.")
+        self.llm = llm
+        self.provider = provider
         
         # self.summarize_template = """
         # You are tasked with summarizing a document in a clear, concise, and professional manner. 
@@ -87,6 +83,12 @@ INPUT NOTES:
 {text}
 
 Create a comprehensive educational resource in Markdown format that preserves nearly all educational value while enhancing structure and readability. This should serve as a complete study resource that students can rely on for thorough understanding and revision.
+Content should be in Markdown format.
+Make sure to enclose the Markdown content in triple backticks.(```markdown content ```)
+5. MARKDOWN FORMAT:
+   - Use triple backticks to enclose the entire Markdown content
+   - Ensure proper syntax highlighting for code snippets
+   - Maintain consistent formatting throughout the document
 """
         self.summarize_prompt = PromptTemplate.from_template(self.summarize_template)
     
@@ -144,7 +146,16 @@ Create a comprehensive educational resource in Markdown format that preserves ne
             # "ex_summarized_text": ex_summarized_text,
             "text": input_text
         })
-        pattern = r"```markdown\n(.*?)$"
+
+        if self.provider == "google_genai":
+            text = text.content
+        elif self.provider == "llama_cpp":
+            text = text
+        elif self.provider == "ollama":
+            text = text
+        # Extract the markdown content from the response
+        # This regex pattern assumes the markdown content is enclosed in triple backticks
+        pattern = r"```markdown\n(.*?)$" 
         result = re.search(pattern, text, re.DOTALL)
 
         if result:

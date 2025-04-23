@@ -1,6 +1,6 @@
 from langchain_core.prompts import PromptTemplate
 
-def learning_gap(llm,doc_result, trans_result):
+def learning_gap(llm,provider,doc_result, trans_result):
     
     learning_gap_analysis_prompt = PromptTemplate.from_template(
         """
@@ -32,7 +32,9 @@ def learning_gap(llm,doc_result, trans_result):
 
     chain = learning_gap_analysis_prompt | llm 
     analysis = chain.invoke({"doc1": doc_result, "doc2": trans_result})    
-    if llm.model in ["models/gemma-3-27b-it","models/gemini-2.0-flash-lite","models/gemini-2.0-flash"]:
+    if provider == "google_genai":
         return analysis.content
-    else:
+    elif provider == "llama_cpp":
+        return analysis
+    elif provider == "ollama":
         return analysis

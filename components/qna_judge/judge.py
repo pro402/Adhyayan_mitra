@@ -1,7 +1,7 @@
 from langchain.prompts import PromptTemplate
 from langchain_core.language_models.chat_models import BaseChatModel # Assuming you use a ChatModel
 
-def qna_check_and_scoring(llm: BaseChatModel, doc_result: str, trans_result: str, analysis: str, qna: str) -> str:
+def qna_check_and_scoring(llm: BaseChatModel, provider, doc_result: str, trans_result: str, analysis: str, qna: str) -> str:
     """
     Generates an expert evaluation of student Q&A based on provided materials.
 
@@ -124,7 +124,9 @@ def qna_check_and_scoring(llm: BaseChatModel, doc_result: str, trans_result: str
 
     # Assuming the LLM response is in the .content attribute for models like Gemma
     # Adjust this based on the specific Langchain LLM wrapper you use
-    if llm.model in ["models/gemma-3-27b-it","models/gemini-2.0-flash-lite","models/gemini-2.0-flash"]:
-       return judge.content
-    else:
-       return judge
+    if provider == "google_genai":
+        return judge.content
+    elif provider == "llama_cpp":
+        return judge
+    elif provider == "ollama":
+        return judge

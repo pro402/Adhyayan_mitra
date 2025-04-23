@@ -17,4 +17,4 @@ def set_llm(
         temperature=0,
         seed=42,
     )
-    return llm
+    return [llm, model,"ollama"]

@@ -5,7 +5,7 @@ import os
 from langchain_community.llms import LlamaCpp
 
 def set_llm(
-        model_path: str = "../../qwen2.5-0.5b-instruct-q8_0.gguf",
+        model_path: str = "/home/prasun/Desktop/ADHYAYAN_MITRA/qwen2.5-0.5b-instruct-q8_0.gguf",
 ):
     """
     Set the LLM to use based on user input.
@@ -24,4 +24,4 @@ def set_llm(
         n_gpu_layers=0,   # 0 for CPU-only inference
         verbose=False  
     )
-    return llm
+    return [llm, model_path, "llama_cpp"]

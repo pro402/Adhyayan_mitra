@@ -13,7 +13,7 @@ def extract_python_list(text):
     
     return items
 
-def question_gen(llm, doc_result, trans_result, analysis):
+def question_gen(llm, provider, doc_result, trans_result, analysis):
   question_gen_prompt = PromptTemplate.from_template(
       """
       You are a Teaching Assistant responsible for generating a set of descriptive, open-ended questions based on a student's response to course material. Your questions should assess understanding and encourage critical thinking.
@@ -53,7 +53,9 @@ def question_gen(llm, doc_result, trans_result, analysis):
   chain = question_gen_prompt | llm
   questions = chain.invoke({"doc1": doc_result, "doc2":trans_result, "doc3": analysis})
 
-  if llm.model in ["models/gemma-3-27b-it","models/gemini-2.0-flash-lite","models/gemini-2.0-flash"]:
-      return extract_python_list(questions.content)
-  else:
-      return extract_python_list(questions)
+  if provider == "google_genai":
+    return extract_python_list(questions.content)
+  elif provider == "llama_cpp":
+    return extract_python_list(questions)
+  elif provider == "ollama":
+    return extract_python_list(questions)

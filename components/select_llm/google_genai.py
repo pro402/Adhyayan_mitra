@@ -21,4 +21,4 @@ def set_llm(
         max_tokens=8192,
         api_key = google_api,
     )
-    return llm
+    return [llm, model,"google_genai"]
