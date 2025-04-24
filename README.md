@@ -2,23 +2,23 @@
 
     1.1. Pre-requisits:
 
-    - sudo apt install python3-venv
+    - `sudo apt install python3-venv`
 
-    1.2. python3 -m venv .venv
+    1.2. `python3 -m venv .venv`
 
-    1.3. source .venv/bin/activate
+    1.3. `source .venv/bin/activate`
 
-    1.4. deactivate
+    1.4. `deactivate`
 
 2. Install the requirements from the requirements,txt
 
-    pip install -r requirements.txt
+    `pip install -r requirements.txt`
 
 3. After installing the packages, you need to register your virtual environment as a 
 
     Jupyter kernel:
 
-    >    python -m ipykernel install --user --name=your_env_name
+    >    `python -m ipykernel install --user --name=your_env_name`
 
     Replace "your_env_name" with a descriptive name for your environment
 
@@ -33,7 +33,12 @@ recorder API to do so aswell (simply records audio in .mp3 format)
 
     7.1 Install 2 Ollama Models 
 
-    - ollama pull hf.co/mradermacher/Qwen2.5-0.5B-Instruct-GGUF:Q8_0
+    - `ollama pull hf.co/mradermacher/Qwen2.5-0.5B-Instruct-GGUF:Q8_0`
 
-    - ollama run qwen2.5:0.5b
+    - `ollama run qwen2.5:0.5b`
+
+8. Requirements to Generate podcasts/Audio ReCap using kokoro model.
+    - `sudo apt-get install espeak-ng -y`
+    - For Windows and Mac installation:
+        - https://github.com/hexgrad/kokoro?tab=readme-ov-file#advanced-usage
 

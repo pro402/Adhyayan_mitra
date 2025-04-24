@@ -10,3 +10,6 @@
 /components/whisper/__pycache__
 /.cache
 /qwen2.5-0.5b-instruct-q8_0.gguf
+/testing/audio_chunks
+/testing/merged_output.wav
+/testing/gtts.mp3

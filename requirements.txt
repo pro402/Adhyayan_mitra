@@ -17,3 +17,6 @@ optimum
 huggingface_hub
 llama-cpp-python 
 langchain-community
+gTTS
+kokoro
+soundfile
