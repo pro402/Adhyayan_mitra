@@ -8,8 +8,8 @@
 /components/select_llm/__pycache__
 /components/transcripter_api/__pycache__
 /components/whisper/__pycache__
+/components/audio_gen/__pycache__
 /.cache
 /qwen2.5-0.5b-instruct-q8_0.gguf
 /testing/audio_chunks
-/testing/merged_output.wav
-/testing/gtts.mp3
+/testing/merged_output.mp3
