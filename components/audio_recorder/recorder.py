@@ -6,6 +6,9 @@ import os
 from pydub import AudioSegment
 from pydub.effects import normalize
 
+# for fully android pydub compatibility may be difficult so can 
+# we can shift to other libraries like pvrecorder or we can use streamlit-audio-recorder
+
 class AudioRecorder:
     def __init__(self):
         self.q = queue.Queue()
