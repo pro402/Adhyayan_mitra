@@ -1,0 +1,4 @@
+create a file named .env
+and the enter the google api from the aistudio.google
+
+GOOGLE_API = "API_KEY"
