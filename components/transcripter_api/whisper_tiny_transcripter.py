@@ -3,8 +3,25 @@ import os
 from pathlib import Path
 from time import time
 
-def transcribe_audio(project_components_dir=None):
+def transcribe_audio(
+        recording:str = "No",
+        project_components_dir=None
+):
     """Main function to handle audio recording and transcription"""
+    "Args:"
+    "    recording (str): 'Yes' to record audio, 'No' to transcribe pre-recorded audio."
+    "    project_components_dir (str): Path to the components directory."
+    "Returns:"
+    "    str: Transcription result or None if an error occurs."
+    "Raises:"
+    "    Exception: If an error occurs during transcription."
+    "Notes:"
+    "    - If 'recording' is 'Yes', it will record audio and save it as recording.mp3."
+    "    - If 'recording' is 'No', it will look for recording.mp3 in the same directory."
+    "    - The transcription result will be saved in transcript.txt."
+    "    - The function will print the time taken for transcription."
+    "    - The function will print the path of the saved transcript."
+    "    - The function will print the path of the saved recording."
     try:
         # Get the directory where transcripter.py is located
         script_dir = Path(__file__).parent.absolute()
@@ -37,14 +54,10 @@ def transcribe_audio(project_components_dir=None):
             from components.sTT_model.whisper_tiny import AudioTranscriptor
         
         # User input handling
-        recording = input("""Enter Yes -> If you need to record the audio and then transcribe it.
-Enter No -> If you want to transcribe the pre-recorded audio.
-""").lower().strip()
-        
         # Audio capture logic
         audio_path = None
         
-        if recording == "yes":
+        if recording.lower().strip() == "yes":
             recorder = AudioRecorder()
             print("Starting recording...")
             recorder.start_recording()
@@ -55,7 +68,7 @@ Enter No -> If you want to transcribe the pre-recorded audio.
             recording_path = script_dir / "recording.mp3"
             audio_path = recorder.stop_recording(str(recording_path))
             
-        elif recording == "no":
+        elif recording.lower().strip() == "no":
             # Look for recording.mp3 in the same directory as this script
             recording_path = script_dir / "recording.mp3"
             if recording_path.exists():

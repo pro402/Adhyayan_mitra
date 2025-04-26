@@ -1,5 +1,6 @@
 /.venv
 /testing/.env
+/components/__pycache__
 /components/audio_recorder/__pycache__
 /components/doc_pipeline/__pycache__
 /components/gap_analyzer/__pycache__
@@ -15,4 +16,4 @@
 /testing/merged_output.mp3
 /components/transcript_gen/__pycache__
 /usage/.env
-/user_interface
+/user_interface/.env
