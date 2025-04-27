@@ -6,7 +6,7 @@ def gap_analysis():
     required_vars = ['llm', 'provider', 'doc_result', 'trans_result']
     if not all(var in st.session_state and st.session_state[var] for var in required_vars):
         st.error("Complete previous steps first: Need LLM setup, documents processed, and transcript generated")
-        st.page_link("home.py", label="← Return to Home", icon="🏠")
+        st.page_link("Home.py", label="← Return to Home", icon="🏠")
         st.stop()
 
     st.title("📊 Learning Gap Analysis")
