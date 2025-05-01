@@ -3,9 +3,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 # from dotenv import load_dotenv
 # load_dotenv()
 
-# google_api = os.getenv("GOOGLE_API_KEY")
+# google_api = os.getenv("GOOGLE_API")
 # if google_api:
-#     os.environ["GOOGLE_API_KEY"] = google_api
+    # os.environ["GOOGLE_API_KEY"] = google_api
 
 def set_llm(
     model: str = "gemini-2.0-flash",
@@ -26,7 +26,7 @@ def set_llm(
         llm = ChatGoogleGenerativeAI(
             model=model,
             temperature = 0,
-            max_tokens = 8192
+            max_tokens = 8192,
         )
         return [llm, model, "google_genai"]
     except Exception as e:

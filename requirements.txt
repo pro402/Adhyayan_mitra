@@ -11,6 +11,7 @@ langchain-core
 langchain-huggingface
 langchain-ollama
 langchain-google-genai
+langchain-nvidia-ai-endpoints
 docling
 pandas
 optimum
