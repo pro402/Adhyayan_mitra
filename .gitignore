@@ -19,3 +19,6 @@
 /user_interface/.env
 /user_interface
 /components/revision_tools/__pycache__
+/collect_py_files.sh
+/all_python_scripts.txt
+/py code
