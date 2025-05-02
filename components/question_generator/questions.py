@@ -34,7 +34,7 @@ def question_gen(llm, provider, doc_result, trans_result, analysis):
       {doc3}
 
       Instructions:
-      - Generate between 7 to 10 descriptive, open-ended questions.
+      - Generate between 7 to 8 descriptive, open-ended questions.
       - Each question must focus on an identified gap: missing explanations, skipped topics, or misunderstandings.
       - Ensure every question probes deeper into the student’s comprehension and addresses specific gaps found in the transcript.
       - Present the questions as a Python list of strings, for example:

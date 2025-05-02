@@ -54,9 +54,32 @@ with st.container():
         5. **Receive** personalized feedback and resources
         """)
 
+# --- Topic Information Header ---
+st.markdown("""
+<div style="padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="color: #1e3a8a; margin-bottom: 5px;">The French Revolution</h2>
+            <p style="color: #6b7280; margin-top: 0;">Class 9 • NCERT History</p>
+        </div>
+        <div>
+            <p style="color: #3b82f6; text-align: right;">Ready to learn? Let's get started!</p>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 # --- Audio Input Section (Record or Upload) ---
 with st.container():
     st.header("🎤 Learning Session: Record or Upload Audio")
+    
+    # Added clear instructions about what audio to record
+    st.info("""
+    **What to record:** Please record yourself explaining the key events, causes, and impacts of the French Revolution based on your understanding.
+    
+    **Purpose:** Your recording helps assess your comprehension of the historical events and concepts related to the French Revolution.
+    """)
+    
     audio_mode = st.radio(
         "Choose how you'd like to provide audio:",
         ("Record with microphone", "Upload an audio file"),
@@ -97,6 +120,7 @@ with st.container():
                 st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
 
     else:  # Upload an audio file
+        st.caption("Upload a recording of yourself explaining the French Revolution")
         uploaded_audio = st.file_uploader(
             "Upload your audio file (wav, mp3, m4a, ogg)",
             type=['wav', 'mp3', 'm4a', 'ogg'],
@@ -124,6 +148,14 @@ with st.container():
 # --- Transcription Section ---
 with st.container():
     st.header("📝 Transcription & Analysis")
+    
+    # Added clear instructions about transcription
+    st.info("""
+    **What happens here:** Your explanation of the French Revolution will be converted to text for analysis, If edited make sure to Update the Transcript.
+    
+    **Purpose:** This text version allows the AI to evaluate your understanding of key historical events and concepts.
+    """)
+    
     trans_col1, trans_col2 = st.columns([3,1])
     with trans_col1:
         if st.button("✨ Generate Transcript", 
@@ -161,7 +193,7 @@ with st.container():
                 st.download_button(
                     label="💾 Download Transcript",
                     data=st.session_state.trans_result,
-                    file_name="learning_transcript.txt",
+                    file_name="french_revolution_explanation.txt",
                     mime="text/plain",
                     use_container_width=True
                 )
@@ -169,6 +201,14 @@ with st.container():
 # --- AI Model Selection ---
 with st.container():
     st.header("🧠 AI Processing Setup")
+    
+    # Added clear instructions about AI model selection
+    st.info("""
+    **What to do:** Select an AI provider and model to analyze your explanation of the French Revolution.
+    
+    **Purpose:** The AI will compare your explanation with historical facts to assess your understanding.
+    """)
+    
     model_col1, model_col2 = st.columns(2)
     with model_col1:
         provider = st.selectbox(
@@ -181,7 +221,7 @@ with st.container():
             model = st.selectbox(
                 "🧠 Select Model",
                 (
-                    "gemini-2.0-flash-lite", "gemini-2.0-flash",
+                    "gemini-2.0-flash", "gemini-2.0-flash-lite",
                     "gemini-2.5-pro-preview-03-25", "gemini-2.5-flash-preview-04-17",
                     "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b"
                 ),
@@ -222,7 +262,7 @@ with st.container():
                 try:
                     llm_config = build_nvidia.set_llm(
                         model=model, 
-                        nvidia_api_key=nvidia_api_key  # Match corrected parameter name
+                        nvidia_api_key=nvidia_api_key
                     )
                     st.session_state.update({
                         'llm': llm_config[0],
@@ -255,9 +295,17 @@ with st.container():
 # --- Document Processing ---
 with st.container():
     st.header("📚 Study Material Analysis")
+    
+    # Added clear instructions about document upload
+    st.info("""
+    **What to upload:** Please upload your French Revolution study materials, textbook chapters, or class notes.
+    
+    **Purpose:** These materials serve as the reference against which your understanding will be evaluated.
+    """)
+    
     doc_col1, doc_col2 = st.columns([2,1])
     with doc_col1:
-        uploaded_file = st.file_uploader("Upload study materials (PDF/DOCX/MD)", 
+        uploaded_file = st.file_uploader("Upload French Revolution study materials (PDF/DOCX/MD)", 
                                        type=['pdf', 'docx', 'md'],
                                        help="Enhance analysis with course materials")
         if uploaded_file:
@@ -275,7 +323,7 @@ with st.container():
                     st.session_state.doc_result = processor.process_document(
                         file_path=temp_path
                     )
-                st.success("✅ Materials processed successfully")
+                st.success("✅ French Revolution materials processed successfully")
             except Exception as e:
                 st.error(f"❌ Processing failed: {str(e)}")
             finally:
@@ -284,7 +332,7 @@ with st.container():
 
     # Key Insights section immediately below header
     if st.session_state.doc_result:
-        st.subheader("📌 Key Insights")
+        st.subheader("📌 Key Insights from French Revolution Materials")
         col_md, col_raw = st.columns([3, 1])
         with col_md:
             st.markdown(st.session_state.doc_result, unsafe_allow_html=True)
@@ -292,9 +340,9 @@ with st.container():
             with st.expander("📄 Raw Content"):
                 st.code(st.session_state.doc_result, language="markdown")
         st.download_button(
-            label="📥 Export as Markdown",
+            label="📥 Export French Revolution Insights",
             data=st.session_state.doc_result,
-            file_name="learning_insights.md",
+            file_name="french_revolution_insights.md",
             mime="text/markdown",
             use_container_width=True
         )
@@ -306,6 +354,10 @@ if (
     and st.session_state.llm
 ):
     st.session_state.unlocked_pages['GAP_Analysis'] = True
+    st.success("🎉 All steps completed! You can now proceed to analyze your understanding of the French Revolution.")
+    
+    if st.button("➡️ Continue to Knowledge Gap Analysis", use_container_width=True):
+        st.switch_page("pages/1_📊_GAP_Analysis.py")
 
 # --- System Status ---
 with st.container():
