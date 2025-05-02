@@ -31,7 +31,7 @@ def get_summary_notes(
         - Use numbered lists for sequential information or steps
         - Use bullet points for related but non-sequential items
         - Include a "Common Misconceptions" section addressing specific errors
-        - Create a "Key Questions & Answers" section with correct responses
+        - Create a "Key Questions & Answers" section with correct responses in proper format, Make sure that there is proper line breaks between the questions and answers.
         
         ASSESSMENT MATERIALS:
         Evaluation Report: {evaluation_report}
