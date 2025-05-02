@@ -94,6 +94,6 @@ def learning_material():
 
     # Final completion
     st.success("🎉 Learning Journey Complete!")
-    st.page_link("home.py", label="Restart Learning Session →", icon="🔄")
+    st.page_link("Home.py", label="Restart Learning Session →", icon="🔄")
 
 learning_material()
