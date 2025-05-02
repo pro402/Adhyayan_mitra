@@ -18,3 +18,4 @@
 /usage/.env
 /user_interface/.env
 /user_interface
+/components/revision_tools/__pycache__
