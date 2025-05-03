@@ -149,7 +149,7 @@ streamlit run Home.py
 The web interface lets you record/upload audio, transcribe, select AI models, upload study materials, and navigate through gap analysis, Q&A, and learning-material pages.
 ### 🎬 Demo
 
-<video src="https://github.com/pro402/Adhyayan_mitra/blob/development/videos/demo.mp4" controls style="max-width:100%;"></video>
+[![Watch the video]](.videos/demo.mp4)
 
 ## 📖 Usage Examples
 
