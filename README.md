@@ -86,6 +86,7 @@ source .venv/bin/activate       # Linux/macOS
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
+pip install llama-cpp-python (need configuring of c++)
 ```
 
 ### 4. Register Jupyter kernel (optional)
