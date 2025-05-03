@@ -15,8 +15,7 @@ langchain-nvidia-ai-endpoints
 docling
 pandas
 optimum
-huggingface_hub
-llama-cpp-python 
+huggingface_hub 
 langchain-community
 kokoro
 soundfile
