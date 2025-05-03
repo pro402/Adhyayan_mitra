@@ -150,7 +150,7 @@ The web interface lets you record/upload audio, transcribe, select AI models, up
 
 ### 🎬 Demo
 
-<video src="[videos/demo.mp4](https://drive.google.com/file/d/1E6-wpsj8T3kIDsQGqzbASmBnPgPcv5dS/view?usp=sharing)" controls style="max-width:100%;"></video>
+<video src="https://github.com/user-attachments/assets/3ec3ab99-7f02-4a19-b4b3-82c048e99cdf" controls style="max-width:100%;"></video>
 
 ## 📖 Usage Examples
 
@@ -172,3 +172,5 @@ These notebooks demonstrate:
 - **Gap analysis workflows**
 
 Thank you for exploring Adhyayan Mitra-your feedback and contributions are welcome!  
+
+
