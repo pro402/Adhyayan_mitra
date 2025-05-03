@@ -15,10 +15,10 @@
 /testing/audio_chunks
 /testing/merged_output.mp3
 /components/transcript_gen/__pycache__
+/components/revision_tools/__pycache__
 /usage/.env
 /user_interface/.env
 /user_interface
-/components/revision_tools/__pycache__
 /collect_py_files.sh
 /all_python_scripts.txt
 /py code
