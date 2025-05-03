@@ -45,7 +45,7 @@ def learning_material():
     with col1:
         voice = st.selectbox(
             "🗣️ Select Voice",
-            options=["af_heart", "am_adam", "am_emma"],
+            options=["af_heart", "am_adam", "af_bella"],
             index=0,
             help="Choose voice personality for audio material"
         )
