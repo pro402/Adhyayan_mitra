@@ -20,4 +20,4 @@ langchain-community
 kokoro
 soundfile
 streamlit
-en-core-web-sm --user
+en-core-web-sm
