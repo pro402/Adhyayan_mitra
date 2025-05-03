@@ -6,7 +6,7 @@ from datetime import timedelta
 import tempfile
 
 # Add the parent directory to the path
-sys.path.append(os.path.abspath('/home/prasun/Desktop/ADHYAYAN_MITRA'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from components.audio_recorder.recorder import AudioRecorder
 from components.sTT_model.whisper_tiny import AudioTranscriptor
 from components.select_llm import google_genai, ollama, llama_cpp, build_nvidia
