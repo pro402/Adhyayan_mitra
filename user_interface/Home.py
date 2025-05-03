@@ -82,7 +82,7 @@ with st.container():
     
     audio_mode = st.radio(
         "Choose how you'd like to provide audio:",
-        ("Record with microphone", "Upload an audio file"),
+        ("Upload an audio file", "Record with microphone"),
         horizontal=True,
         help="Record directly or upload an existing audio file (WAV/MP3/M4A/OGG)."
     )
