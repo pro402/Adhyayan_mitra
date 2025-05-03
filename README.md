@@ -150,7 +150,7 @@ The web interface lets you record/upload audio, transcribe, select AI models, up
 
 ### 🎬 Demo
 
-<video src="videos/demo.mp4" controls style="max-width:100%;"></video>
+<video src="[videos/demo.mp4](https://drive.google.com/file/d/1E6-wpsj8T3kIDsQGqzbASmBnPgPcv5dS/view?usp=sharing)" controls style="max-width:100%;"></video>
 
 ## 📖 Usage Examples
 
