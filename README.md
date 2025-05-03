@@ -71,7 +71,7 @@ Adhyayan Mitra is an AI-powered learning companion that combines real-time audio
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/ADHYAYAN_MITRA.git
+git clone https://github.com/pro402/Adhyayan_mitra.git
 cd ADHYAYAN_MITRA
 ```
 
@@ -147,6 +147,9 @@ cd user_interface
 streamlit run Home.py
 ```
 The web interface lets you record/upload audio, transcribe, select AI models, upload study materials, and navigate through gap analysis, Q&A, and learning-material pages.
+### 🎬 Demo
+
+<video src="./videos/demo.mp4" controls style="max-width:100%;"></video>
 
 ## 📖 Usage Examples
 
@@ -166,3 +169,5 @@ These notebooks demonstrate:
 - **Document processing**
 - **Question generation & evaluation**
 - **Gap analysis workflows**
+
+Thank you for exploring Adhyayan Mitra-your feedback and contributions are welcome!  
