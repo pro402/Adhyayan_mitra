@@ -59,8 +59,8 @@ st.markdown("""
 <div style="padding: 10px; border-radius: 5px; margin-bottom: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h2 style="color: #1e3a8a; margin-bottom: 5px;">The French Revolution</h2>
-            <p style="color: #6b7280; margin-top: 0;">Class 9 • NCERT History</p>
+            <h2 style="color: #1e3a8a; margin-bottom: 5px;">The Rise of Nationalism in Europe</h2>
+            <p style="color: #6b7280; margin-top: 0;">Class 10 • NCERT History</p>
         </div>
         <div>
             <p style="color: #3b82f6; text-align: right;">Ready to learn? Let's get started!</p>
