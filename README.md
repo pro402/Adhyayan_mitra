@@ -147,9 +147,10 @@ cd user_interface
 streamlit run Home.py
 ```
 The web interface lets you record/upload audio, transcribe, select AI models, upload study materials, and navigate through gap analysis, Q&A, and learning-material pages.
+
 ### 🎬 Demo
 
-<video src="../videos/demo.mp4" controls style="max-width:100%;"></video>
+<video src="https://github.com/user-attachments/assets/3ec3ab99-7f02-4a19-b4b3-82c048e99cdf" controls style="max-width:100%;"></video>
 
 ## 📖 Usage Examples
 
@@ -171,3 +172,5 @@ These notebooks demonstrate:
 - **Gap analysis workflows**
 
 Thank you for exploring Adhyayan Mitra-your feedback and contributions are welcome!  
+
+
