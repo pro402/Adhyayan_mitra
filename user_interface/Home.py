@@ -1,175 +1,371 @@
-import os
-import sys
 import streamlit as st
+import sys
+import os
+import librosa
+from datetime import timedelta
 import tempfile
-from datetime import datetime
 
 # Add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import other components but skip the audio recorder that's causing issues
+from components.audio_recorder.recorder import AudioRecorder
 from components.sTT_model.whisper_tiny import AudioTranscriptor
-from components.select_llm import google_genai, ollama, llama_cpp, built_in
+from components.select_llm import google_genai, ollama, llama_cpp, build_nvidia
 from components.doc_pipeline.pipeline import DocumentProcessor
-from components.question_generator.questions import QuestionGenerator
-from components.gap_analyzer.analyzer import GapAnalyzer
-from components.qna_judge.judge import QnAJudge
 
-# Set page configuration
-st.set_page_config(
-    page_title="Adhyayan Mitra",
-    page_icon="📚",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# --- Session State Initialization ---
+if 'unlocked_pages' not in st.session_state:
+    st.session_state.unlocked_pages = {
+        'GAP_Analysis': False,
+        'QA': False,
+        'Final_Analysis': False,
+        'Learning_Material': False
+    }
 
-# Custom CSS
+session_vars = [
+    'recorder', 'transcripter', 'file_path', 'duration',
+    'is_recording', 'llm', 'model', 'provider', 'doc_result', 'trans_result'
+]
+for var in session_vars:
+    if var not in st.session_state:
+        st.session_state[var] = None if var != 'is_recording' else False
+
+def valid_audio_file(file_path):
+    """Validate audio file existence and content"""
+    return file_path and os.path.exists(file_path) and librosa.get_duration(path=file_path) > 0
+
+st.set_page_config(page_title="Adhyayan Mitra", page_icon="🎓", layout="wide")
+
+# --- Main Header ---
+with st.container():
+    st.title("Adhyayan Mitra - AI Learning Companion")
+    with st.expander("📘 How It Works"):
+        st.markdown("""
+        **Welcome to your personalized learning journey!**  
+        This system helps you:
+        - 🎧 Record or upload and transcribe learning sessions
+        - 📝 Analyze knowledge gaps
+        - ❓ Generate practice questions
+        - 📚 Create study resources
+        
+        1. **Record or upload** your learning session  
+        2. **Transcribe** to text for analysis  
+        3. **Select** an AI model for processing  
+        4. **Upload** study materials for enhanced analysis  
+        5. **Receive** personalized feedback and resources
+        """)
+
+# --- Topic Information Header ---
 st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        color: #1E88E5;
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-    .sub-header {
-        font-size: 1.5rem;
-        color: #424242;
-        margin-bottom: 1rem;
-    }
-    .info-text {
-        font-size: 1rem;
-        color: #616161;
-    }
-    .highlight {
-        background-color: #f0f7ff;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 0.5rem solid #1E88E5;
-    }
-</style>
+<div style="padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="color: #1e3a8a; margin-bottom: 5px;">The Rise of Nationalism in Europe</h2>
+            <p style="color: #6b7280; margin-top: 0;">Class 10 • NCERT History</p>
+        </div>
+        <div>
+            <p style="color: #3b82f6; text-align: right;">Ready to learn? Let's get started!</p>
+        </div>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
-def main():
-    st.markdown("<h1 class='main-header'>Adhyayan Mitra</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='info-text'>Your AI-powered learning assistant</p>", unsafe_allow_html=True)
+# --- Audio Input Section (Record or Upload) ---
+with st.container():
+    st.header("🎤 Learning Session: Record or Upload Audio")
     
-    # Initialize session state variables if they don't exist
-    if 'audio_file' not in st.session_state:
-        st.session_state.audio_file = None
-    if 'transcript' not in st.session_state:
-        st.session_state.transcript = None
-    if 'document' not in st.session_state:
-        st.session_state.document = None
-    if 'questions' not in st.session_state:
-        st.session_state.questions = []
-    if 'answers' not in st.session_state:
-        st.session_state.answers = []
-    if 'gaps' not in st.session_state:
-        st.session_state.gaps = []
-    if 'feedback' not in st.session_state:
-        st.session_state.feedback = None
+    # Added clear instructions about what audio to record
+    st.info("""
+    **What to record:** Please record yourself explaining the key events, causes, and impacts of the French Revolution based on your understanding.
     
-    # Sidebar for navigation and settings
-    with st.sidebar:
-        st.markdown("<h2>Settings</h2>", unsafe_allow_html=True)
-        
-        # LLM Selection
-        st.markdown("<h3>Select LLM</h3>", unsafe_allow_html=True)
-        llm_option = st.selectbox(
-            "Choose a language model:",
-            ["Google Gemini", "Ollama", "Llama.cpp", "Built-in"]
-        )
-        
-        # API Key input for Google Gemini
-        if llm_option == "Google Gemini":
-            api_key = st.text_input("Enter Google API Key:", type="password")
-        
-        # Reset button
-        if st.button("Reset Session"):
-            st.session_state.audio_file = None
-            st.session_state.transcript = None
-            st.session_state.document = None
-            st.session_state.questions = []
-            st.session_state.answers = []
-            st.session_state.gaps = []
-            st.session_state.feedback = None
-            st.experimental_rerun()
-    
-    # Main content area
-    st.markdown("<h2 class='sub-header'>Record or Upload Audio</h2>", unsafe_allow_html=True)
-    
-    # Use Streamlit's built-in audio recorder instead of custom recorder
-    audio_bytes = st.audio_input("Record your voice")
-    
-    if audio_bytes:
-        # Save the recorded audio to a temporary file
-        temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
-        temp_audio_file.write(audio_bytes)
-        temp_audio_file.close()
-        
-        st.session_state.audio_file = temp_audio_file.name
-        st.success(f"Audio recorded successfully! File saved as {temp_audio_file.name}")
-    
-    # Or allow file upload
-    uploaded_file = st.file_uploader("Or upload an audio file", type=["wav", "mp3", "m4a"])
-    if uploaded_file:
-        # Save the uploaded file to a temporary location
-        temp_audio_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}")
-        temp_audio_file.write(uploaded_file.getvalue())
-        temp_audio_file.close()
-        
-        st.session_state.audio_file = temp_audio_file.name
-        st.success(f"Audio file uploaded successfully! File saved as {temp_audio_file.name}")
-    
-    # Transcribe audio if available
-    if st.session_state.audio_file and st.button("Transcribe Audio"):
-        with st.spinner("Transcribing audio..."):
-            try:
-                transcriptor = AudioTranscriptor()
-                st.session_state.transcript = transcriptor.transcribe(st.session_state.audio_file)
-                st.success("Audio transcribed successfully!")
-            except Exception as e:
-                st.error(f"Error transcribing audio: {str(e)}")
-    
-    # Display transcript if available
-    if st.session_state.transcript:
-        st.markdown("<h2 class='sub-header'>Transcript</h2>", unsafe_allow_html=True)
-        st.markdown(f"<div class='highlight'>{st.session_state.transcript}</div>", unsafe_allow_html=True)
-        
-        # Process document
-        if st.button("Process Document"):
-            with st.spinner("Processing document..."):
-                try:
-                    # Select LLM based on user choice
-                    if llm_option == "Google Gemini":
-                        llm = google_genai.GoogleGenAI(api_key)
-                    elif llm_option == "Ollama":
-                        llm = ollama.Ollama()
-                    elif llm_option == "Llama.cpp":
-                        llm = llama_cpp.LlamaCpp()
-                    else:
-                        llm = built_in.BuiltIn()
-                    
-                    # Process document
-                    processor = DocumentProcessor(llm)
-                    st.session_state.document = processor.process(st.session_state.transcript)
-                    
-                    # Generate questions
-                    question_generator = QuestionGenerator(llm)
-                    st.session_state.questions = question_generator.generate(st.session_state.document)
-                    
-                    st.success("Document processed and questions generated successfully!")
-                except Exception as e:
-                    st.error(f"Error processing document: {str(e)}")
-    
-    # Display navigation to other pages
-    st.markdown("<h2 class='sub-header'>Next Steps</h2>", unsafe_allow_html=True)
-    st.markdown("""
-    1. Go to the **QA** page to answer questions about your document
-    2. Check the **GAP Analysis** page to identify knowledge gaps
-    3. View the **Final Analysis** page for comprehensive feedback
+    **Purpose:** Your recording helps assess your comprehension of the historical events and concepts related to the French Revolution.
     """)
+    
+    audio_mode = st.radio(
+        "Choose how you'd like to provide audio:",
+        ("Upload an audio file", "Record with microphone"),
+        horizontal=True,
+        help="Record directly or upload an existing audio file (WAV/MP3/M4A/OGG)."
+    )
 
-if __name__ == "__main__":
-    main()
+    if audio_mode == "Record with microphone":
+        col1, col2 = st.columns([1,2])
+        with col1:
+            recorder_col1, recorder_col2 = st.columns(2)
+            with recorder_col1:
+                if st.button("▶️ Start Recording", disabled=st.session_state.is_recording,
+                            help="Begin audio recording session"):
+                    try:
+                        st.session_state.recorder = AudioRecorder()
+                        st.session_state.recorder.start_recording()
+                        st.session_state.is_recording = True
+                        st.toast("Recording started...", icon="🎙️")
+                    except Exception as e:
+                        st.error(f"🚨 Recording failed: {str(e)}")
+            with recorder_col2:
+                if st.button("⏹️ Stop Recording", disabled=not st.session_state.is_recording,
+                            help="Stop and save recording"):
+                    try:
+                        st.session_state.file_path = st.session_state.recorder.stop_recording()
+                        st.session_state.is_recording = False
+                        if valid_audio_file(st.session_state.file_path):
+                            st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
+                            st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
+                        else:
+                            st.error("⚠️ Failed to save valid audio file")
+                    except Exception as e:
+                        st.error(f"🚨 Recording error: {str(e)}")
+        with col2:
+            if valid_audio_file(st.session_state.file_path):
+                st.audio(st.session_state.file_path)
+                st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
+
+    else:  # Upload an audio file
+        st.caption("Upload a recording of yourself explaining the French Revolution")
+        uploaded_audio = st.file_uploader(
+            "Upload your audio file (wav, mp3, m4a, ogg)",
+            type=['wav', 'mp3', 'm4a', 'ogg'],
+            help="Upload a pre-recorded audio file."
+        )
+        if uploaded_audio:
+            temp_audio_path = None
+            try:
+                file_extension = os.path.splitext(uploaded_audio.name)[1]
+                with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as tmp_file:
+                    tmp_file.write(uploaded_audio.getvalue())
+                    temp_audio_path = tmp_file.name
+                if valid_audio_file(temp_audio_path):
+                    st.session_state.file_path = temp_audio_path
+                    st.session_state.duration = librosa.get_duration(path=temp_audio_path)
+                    st.audio(temp_audio_path)
+                    st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
+                    st.toast("✅ Audio uploaded and ready!", icon="🎧")
+                else:
+                    st.error("⚠️ Uploaded file is not a valid audio file.")
+            except Exception as e:
+                st.error(f"❌ Error processing uploaded audio: {str(e)}")
+            # No cleanup here: keep the temp file for later transcription
+
+# --- Transcription Section ---
+with st.container():
+    st.header("📝 Transcription & Analysis")
+    
+    # Added clear instructions about transcription
+    st.info("""
+    **What happens here:** Your explanation of the French Revolution will be converted to text for analysis, If edited make sure to Update the Transcript.
+    
+    **Purpose:** This text version allows the AI to evaluate your understanding of key historical events and concepts.
+    """)
+    
+    trans_col1, trans_col2 = st.columns([3,1])
+    with trans_col1:
+        if st.button("✨ Generate Transcript", 
+                    disabled=not valid_audio_file(st.session_state.file_path),
+                    help="Convert audio to text for analysis"):
+            if st.session_state.duration < 30:
+                st.warning(f"⚠️ Minimum 30 seconds required (Current: {st.session_state.duration:.2f}s)")
+            else:
+                try:
+                    with st.spinner("🔍 Analyzing content..."):
+                        transcriptor = st.session_state.transcripter or AudioTranscriptor()
+                        st.session_state.trans_result = transcriptor.whisper_transcribe(
+                            st.session_state.file_path
+                        )
+                    st.toast("Transcript generated!", icon="✅")
+                except Exception as e:
+                    st.error(f"❌ Transcription failed: {str(e)}")
+
+        # Editable transcript area and update button
+        if st.session_state.trans_result:
+            st.subheader("📄 Learning Session Transcript")
+            edited_transcript = st.text_area(
+                "Edit Transcript:",
+                value=st.session_state.trans_result,
+                height=250,
+                key="transcript_editor",
+                help="Make any corrections to the transcript"
+            )
+            col_upd, col_dl = st.columns([1, 3])
+            with col_upd:
+                if st.button("🔄 Update Transcript"):
+                    st.session_state.trans_result = edited_transcript
+                    st.toast("Transcript updated!", icon="📝")
+            with col_dl:
+                st.download_button(
+                    label="💾 Download Transcript",
+                    data=st.session_state.trans_result,
+                    file_name="french_revolution_explanation.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
+
+# --- AI Model Selection ---
+with st.container():
+    st.header("🧠 AI Processing Setup")
+    
+    # Added clear instructions about AI model selection
+    st.info("""
+    **What to do:** Select an AI provider and model to analyze your explanation of the French Revolution.
+    
+    **Purpose:** The AI will compare your explanation with historical facts to assess your understanding.
+    """)
+    
+    model_col1, model_col2 = st.columns(2)
+    with model_col1:
+        provider = st.selectbox(
+            "🤖 Select AI Provider",
+            ("Google GenAI","Build With NVIDIA", "Ollama", "Llama-CPP"),
+            index=0,
+            help="Choose your preferred AI engine"
+        )
+        if provider == "Google GenAI":
+            model = st.selectbox(
+                "🧠 Select Model",
+                (
+                    "gemini-2.0-flash", "gemini-2.0-flash-lite",
+                    "gemini-2.5-pro-preview-03-25", "gemini-2.5-flash-preview-04-17",
+                    "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b"
+                ),
+                index=0,
+                help="Choose the model for Google GenAI"
+            )
+            st.caption("Note: Ensure you have a valid Google API key.")
+            st.caption("Get your API key from https://aistudio.google.com")
+            google_api = st.text_input("🔑 Google API Key", type="password", help="Get your API key from https://aistudio.google.com")
+            if google_api:
+                try:
+                    llm_config = google_genai.set_llm(model=model, google_api=google_api)
+                    st.session_state.update({
+                        'llm': llm_config[0],
+                        'model': llm_config[1],
+                        'provider': llm_config[2],
+                    })
+                    st.success("✅ Google GenAI authenticated successfully")
+                except Exception as e:
+                    st.error(f"❌ Authentication failed: {str(e)}")
+        elif provider == "Build With NVIDIA":
+            model = st.selectbox(
+                "🧠 Select Model",
+                (
+                    "meta/llama-3.3-70b-instruct",
+                    "deepseek-ai/deepseek-r1-distill-llama-8b",
+                    "qwen/qwen-32b"
+                ),
+                index=0,
+                help="Choose the NVIDIA AI Foundation model"
+            )
+            st.caption("Note: Ensure you have a valid NVIDIA API key.")
+            st.caption("Get your API key from https://build.nvidia.com")
+            nvidia_api_key = st.text_input("🔑 NVIDIA API Key", 
+                                        type="password",
+                                        help="API key starts with 'nvapi-'")
+            if nvidia_api_key:
+                try:
+                    llm_config = build_nvidia.set_llm(
+                        model=model, 
+                        nvidia_api_key=nvidia_api_key
+                    )
+                    st.session_state.update({
+                        'llm': llm_config[0],
+                        'model': llm_config[1],
+                        'provider': llm_config[2],
+                    })
+                    st.success("✅ NVIDIA AI authenticated successfully")
+                except Exception as e:
+                    st.error(f"❌ Authentication failed: {str(e)}")
+        elif provider == "Ollama":
+            llm_config = ollama.set_llm()
+            st.session_state.update({
+                'llm': llm_config[0],
+                'model': llm_config[1],
+                'provider': llm_config[2]
+            })
+        else:
+            llm_config = llama_cpp.set_llm()
+            st.session_state.update({
+                'llm': llm_config[0],
+                'model': llm_config[1],
+                'provider': llm_config[2]
+            })
+    with model_col2:
+        st.subheader("🔧 Active Configuration")
+        st.metric("Selected Provider", provider)
+        st.metric("Active Model", st.session_state.model)
+        st.caption("Model parameters and settings")
+
+# --- Document Processing ---
+with st.container():
+    st.header("📚 Study Material Analysis")
+    
+    # Added clear instructions about document upload
+    st.info("""
+    **What to upload:** Please upload your French Revolution study materials, textbook chapters, or class notes.
+    
+    **Purpose:** These materials serve as the reference against which your understanding will be evaluated.
+    """)
+    
+    doc_col1, doc_col2 = st.columns([2,1])
+    with doc_col1:
+        uploaded_file = st.file_uploader("Upload French Revolution study materials (PDF/DOCX/MD)", 
+                                       type=['pdf', 'docx', 'md'],
+                                       help="Enhance analysis with course materials")
+        if uploaded_file:
+            temp_path = None
+            try:
+                with st.spinner("📖 Processing documents..."):
+                    file_extension = os.path.splitext(uploaded_file.name)[1]
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as tmp_file:
+                        tmp_file.write(uploaded_file.getvalue())
+                        temp_path = tmp_file.name
+                    processor = DocumentProcessor(
+                        llm=st.session_state.llm,
+                        provider=st.session_state.provider,
+                    )
+                    st.session_state.doc_result = processor.process_document(
+                        file_path=temp_path
+                    )
+                st.success("✅ French Revolution materials processed successfully")
+            except Exception as e:
+                st.error(f"❌ Processing failed: {str(e)}")
+            finally:
+                if temp_path and os.path.exists(temp_path):
+                    os.unlink(temp_path)
+
+    # Key Insights section immediately below header
+    if st.session_state.doc_result:
+        st.subheader("📌 Key Insights from French Revolution Materials")
+        col_md, col_raw = st.columns([3, 1])
+        with col_md:
+            st.markdown(st.session_state.doc_result, unsafe_allow_html=True)
+        with col_raw:
+            with st.expander("📄 Raw Content"):
+                st.code(st.session_state.doc_result, language="markdown")
+        st.download_button(
+            label="📥 Export French Revolution Insights",
+            data=st.session_state.doc_result,
+            file_name="french_revolution_insights.md",
+            mime="text/markdown",
+            use_container_width=True
+        )
+
+# --- Unlock Next Page ---
+if (
+    st.session_state.trans_result
+    and st.session_state.doc_result
+    and st.session_state.llm
+):
+    st.session_state.unlocked_pages['GAP_Analysis'] = True
+    st.success("🎉 All steps completed! You can now proceed to analyze your understanding of the French Revolution.")
+    
+    if st.button("➡️ Continue to Knowledge Gap Analysis", use_container_width=True):
+        st.switch_page("pages/1_📊_GAP_Analysis.py")
+
+# --- System Status ---
+with st.container():
+    st.divider()
+    status_cols = st.columns(3)
+    with status_cols[0]:
+        st.metric("Recording Status", "Active ⏺️" if st.session_state.is_recording else "Inactive ⏸️")
+    with status_cols[1]:
+        st.metric("Last Session Duration", f"{st.session_state.duration:.2f}s" if st.session_state.duration else "N/A")
+    with status_cols[2]:
+        st.metric("AI Model Ready", "✅ Operational" if st.session_state.llm else "❌ Offline")
