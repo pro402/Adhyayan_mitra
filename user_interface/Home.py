@@ -7,7 +7,7 @@ import tempfile
 
 # Add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from components.audio_recorder.recorder import AudioRecorder
+# Removed import for custom recorder: from components.audio_recorder.recorder import AudioRecorder
 from components.sTT_model.whisper_tiny import AudioTranscriptor
 from components.select_llm import google_genai, ollama, llama_cpp, build_nvidia
 from components.doc_pipeline.pipeline import DocumentProcessor
@@ -22,12 +22,12 @@ if 'unlocked_pages' not in st.session_state:
     }
 
 session_vars = [
-    'recorder', 'transcripter', 'file_path', 'duration',
-    'is_recording', 'llm', 'model', 'provider', 'doc_result', 'trans_result'
+    'file_path', 'duration', 'llm', 'model', 'provider', 
+    'doc_result', 'trans_result', 'last_recording'
 ]
 for var in session_vars:
     if var not in st.session_state:
-        st.session_state[var] = None if var != 'is_recording' else False
+        st.session_state[var] = None
 
 def valid_audio_file(file_path):
     """Validate audio file existence and content"""
@@ -90,30 +90,24 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
-            recorder_col1, recorder_col2 = st.columns(2)
-            with recorder_col1:
-                if st.button("▶️ Start Recording", disabled=st.session_state.is_recording,
-                            help="Begin audio recording session"):
-                    try:
-                        st.session_state.recorder = AudioRecorder()
-                        st.session_state.recorder.start_recording()
-                        st.session_state.is_recording = True
-                        st.toast("Recording started...", icon="🎙️")
-                    except Exception as e:
-                        st.error(f"🚨 Recording failed: {str(e)}")
-            with recorder_col2:
-                if st.button("⏹️ Stop Recording", disabled=not st.session_state.is_recording,
-                            help="Stop and save recording"):
-                    try:
-                        st.session_state.file_path = st.session_state.recorder.stop_recording()
-                        st.session_state.is_recording = False
-                        if valid_audio_file(st.session_state.file_path):
-                            st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
-                            st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
-                        else:
-                            st.error("⚠️ Failed to save valid audio file")
-                    except Exception as e:
-                        st.error(f"🚨 Recording error: {str(e)}")
+            st.write("Click below to record your explanation:")
+            audio_value = st.audio_input("Record your voice", key="audio_recorder")
+            
+            if audio_value and audio_value != st.session_state.get('last_recording'):
+                # Save the audio to a temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
+                    tmp_file.write(audio_value.getvalue())
+                    st.session_state.file_path = tmp_file.name
+                
+                # Update session state
+                st.session_state.last_recording = audio_value
+                
+                if valid_audio_file(st.session_state.file_path):
+                    st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
+                    st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
+                else:
+                    st.error("⚠️ Failed to save valid audio file")
+        
         with col2:
             if valid_audio_file(st.session_state.file_path):
                 st.audio(st.session_state.file_path)
@@ -364,7 +358,7 @@ with st.container():
     st.divider()
     status_cols = st.columns(3)
     with status_cols[0]:
-        st.metric("Recording Status", "Active ⏺️" if st.session_state.is_recording else "Inactive ⏸️")
+        st.metric("Recording Status", "Ready for recording ⏺️")
     with status_cols[1]:
         st.metric("Last Session Duration", f"{st.session_state.duration:.2f}s" if st.session_state.duration else "N/A")
     with status_cols[2]:
