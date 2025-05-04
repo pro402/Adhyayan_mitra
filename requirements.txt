@@ -1,6 +1,6 @@
 ipykernel
-sounddevice==0.4.6
-pyaudio==0.2.13
+sounddevice
+pyaudio
 numpy
 pydub
 transformers
