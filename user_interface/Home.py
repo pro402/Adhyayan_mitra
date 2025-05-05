@@ -91,16 +91,19 @@ with st.container():
         col1, col2 = st.columns([1,2])
         with col1:
             # Using streamlit-audio-recorder instead of custom AudioRecorder
+            st.toast("🎙️Recording Stated, Recording will stop automaticall after 10s of silence")
+            st.caption("Recording will automatically stop after 10s of pause")
             audio_bytes = audio_recorder(
                 text="Click to record",
                 recording_color="#e8b62c",
                 neutral_color="#6aa36f",
-                icon_size="2x"
+                icon_size="2x",
+                pause_threshold=10.0,
             )
             
             if audio_bytes:
                 # Save the audio bytes to a temporary file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
                     tmp_file.write(audio_bytes)
                     st.session_state.file_path = tmp_file.name
                 
