@@ -88,7 +88,7 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
-            st.caption("Recording will automatically stop after 10s of pause, or click the mic to stop recording.")
+            st.caption("Recording will automatically stop after 10s of pause")
             audio_bytes = audio_recorder(
                 text="⏺️ Click to record",
                 recording_color="#e8b62c",
@@ -97,15 +97,21 @@ with st.container():
                 pause_threshold=10.0,
             )
             if audio_bytes:
+                # Clear previous state
+                st.session_state.file_path = None
+                st.session_state.duration = None
+            
                 st.toast("🎙️ Recording started. Recording will stop automatically after 10s of silence.")
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
                     tmp_file.write(audio_bytes)
                     st.session_state.file_path = tmp_file.name
+            
                 if valid_audio_file(st.session_state.file_path):
                     st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
                     st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
                 else:
                     st.error("⚠️ Failed to save valid audio file")
+
         with col2:
             if valid_audio_file(st.session_state.file_path):
                 st.audio(st.session_state.file_path)
