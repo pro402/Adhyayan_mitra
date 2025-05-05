@@ -1,13 +1,11 @@
 import streamlit as st
 import sys
 import os
-import wave
+import librosa
 from datetime import timedelta
 import tempfile
 import time
 from audio_recorder_streamlit import audio_recorder
-from pydub import AudioSegment
-from io import BytesIO
 
 # Add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,21 +31,8 @@ for var in session_vars:
         st.session_state[var] = None
 
 def valid_audio_file(file_path):
-    """Validate audio file using wave and pydub"""
-    if not (file_path and os.path.exists(file_path)):
-        return False
-    
-    try:
-        if file_path.lower().endswith('.wav'):
-            with wave.open(file_path, 'rb') as wav_file:
-                if wav_file.getnframes() > 0:
-                    return True
-        else:
-            AudioSegment.from_file(file_path)
-            return True
-    except Exception as e:
-        st.error(f"⚠️ Invalid audio file: {str(e)}")
-        return False
+    """Validate audio file existence and content"""
+    return file_path and os.path.exists(file_path) and librosa.get_duration(path=file_path) > 0
 
 st.set_page_config(page_title="Adhyayan Mitra", page_icon="🎓", layout="wide")
 
@@ -104,12 +89,6 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
-            if st.button("🗑️ Clear Recording", disabled=not st.session_state.file_path):
-                st.session_state.file_path = None
-                st.session_state.duration = None
-                st.toast("Recording cleared")
-                st.rerun()
-            
             st.caption("Recording will automatically stop after 10s of pause")
             audio_bytes = audio_recorder(
                 text="⏺️ Click to record",
@@ -118,32 +97,25 @@ with st.container():
                 icon_size="2x",
                 pause_threshold=10.0,
             )
-            
             if audio_bytes:
-                st.toast("🎙️ Processing recording...")
-                try:
-                    # Convert raw bytes to AudioSegment
-                    audio = AudioSegment.from_file(BytesIO(audio_bytes))
-                    
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
-                        # Export with proper WAV parameters
-                        audio.export(tmp_file.name, format="wav")
-                        st.session_state.file_path = tmp_file.name
-                        
-                        # Get duration using pydub
-                        st.session_state.duration = len(audio) / 1000  # Convert ms to seconds
-                        st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
-                        st.rerun()
-                        
-                except Exception as e:
-                    st.error(f"⚠️ Error processing audio: {str(e)}")
+                st.toast("🎙️ Recording started. Recording will stop automatically after 10s of silence.")
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                    tmp_file.write(audio_bytes)
+                    tmp_file.flush()  # Ensure data is written to disk
+                    st.session_state.file_path = tmp_file.name
+    
+                # Add a short delay to ensure file is fully written and available
+                time.sleep(3)
+                if valid_audio_file(st.session_state.file_path):
+                    st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
+                    st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
+                else:
+                    st.error("⚠️ Failed to save valid audio file")
 
         with col2:
             if valid_audio_file(st.session_state.file_path):
                 st.audio(st.session_state.file_path)
                 st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
-            elif st.session_state.file_path:
-                st.warning("Audio file exists but may be invalid or too short to process")
     else:  # Upload an audio file
         st.caption("Upload a recording of yourself explaining the French Revolution")
         uploaded_audio = st.file_uploader(
@@ -152,21 +124,20 @@ with st.container():
             help="Upload a pre-recorded audio file."
         )
         if uploaded_audio:
+            temp_audio_path = None
             try:
-                # Clear previous recording
-                if st.session_state.file_path and os.path.exists(st.session_state.file_path):
-                    os.unlink(st.session_state.file_path)
-                
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
-                    audio = AudioSegment.from_file(BytesIO(uploaded_audio.read()))
-                    audio.export(tmp_file.name, format="wav")
-                    st.session_state.file_path = tmp_file.name
-                    st.session_state.duration = len(audio) / 1000
-                    
-                    st.audio(st.session_state.file_path)
+                file_extension = os.path.splitext(uploaded_audio.name)[1]
+                with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as tmp_file:
+                    tmp_file.write(uploaded_audio.getvalue())
+                    temp_audio_path = tmp_file.name
+                if valid_audio_file(temp_audio_path):
+                    st.session_state.file_path = temp_audio_path
+                    st.session_state.duration = librosa.get_duration(path=temp_audio_path)
+                    st.audio(temp_audio_path)
                     st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
                     st.toast("✅ Audio uploaded and ready!", icon="🎧")
-                    
+                else:
+                    st.error("⚠️ Uploaded file is not a valid audio file.")
             except Exception as e:
                 st.error(f"❌ Error processing uploaded audio: {str(e)}")
 
