@@ -72,11 +72,9 @@ st.markdown("""
 # --- Audio Input Section (Record or Upload) ---
 with st.container():
     st.header("🎤 Learning Session: Record or Upload Audio")
-    
-    # Added clear instructions about what audio to record
     st.info("""
     **What to record:** Please record yourself explaining the key events, causes, and impacts of the French Revolution based on your understanding.
-    
+
     **Purpose:** Your recording helps assess your comprehension of the historical events and concepts related to the French Revolution.
     """)
     
@@ -90,31 +88,34 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
-            # Using streamlit-audio-recorder instead of custom AudioRecorder
+            st.caption("Recording will automatically stop after 10s of pause")
             audio_bytes = audio_recorder(
-                text="Click to record",
+                text="⏺️ Click to record",
                 recording_color="#e8b62c",
                 neutral_color="#6aa36f",
-                icon_size="2x"
+                icon_size="2x",
+                pause_threshold=10.0,
             )
-            
             if audio_bytes:
-                # Save the audio bytes to a temporary file
+                # Clear previous state
+                st.session_state.file_path = None
+                st.session_state.duration = None
+            
+                st.toast("🎙️ Recording started. Recording will stop automatically after 10s of silence.")
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
                     tmp_file.write(audio_bytes)
                     st.session_state.file_path = tmp_file.name
-                
+            
                 if valid_audio_file(st.session_state.file_path):
                     st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
                     st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
                 else:
                     st.error("⚠️ Failed to save valid audio file")
-                
+
         with col2:
             if valid_audio_file(st.session_state.file_path):
                 st.audio(st.session_state.file_path)
                 st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
-
     else:  # Upload an audio file
         st.caption("Upload a recording of yourself explaining the French Revolution")
         uploaded_audio = st.file_uploader(
@@ -143,14 +144,11 @@ with st.container():
 # --- Transcription Section ---
 with st.container():
     st.header("📝 Transcription & Analysis")
-    
-    # Added clear instructions about transcription
     st.info("""
     **What happens here:** Your explanation of the French Revolution will be converted to text for analysis, If edited make sure to Update the Transcript.
-    
+
     **Purpose:** This text version allows the AI to evaluate your understanding of key historical events and concepts.
     """)
-    
     trans_col1, trans_col2 = st.columns([3,1])
     with trans_col1:
         if st.button("✨ Generate Transcript", 
@@ -196,14 +194,11 @@ with st.container():
 # --- AI Model Selection ---
 with st.container():
     st.header("🧠 AI Processing Setup")
-    
-    # Added clear instructions about AI model selection
     st.info("""
     **What to do:** Select an AI provider and model to analyze your explanation of the French Revolution.
-    
+
     **Purpose:** The AI will compare your explanation with historical facts to assess your understanding.
     """)
-    
     model_col1, model_col2 = st.columns(2)
     with model_col1:
         provider = st.selectbox(
@@ -290,14 +285,11 @@ with st.container():
 # --- Document Processing ---
 with st.container():
     st.header("📚 Study Material Analysis")
-    
-    # Added clear instructions about document upload
     st.info("""
     **What to upload:** Please upload your French Revolution study materials, textbook chapters, or class notes.
-    
+
     **Purpose:** These materials serve as the reference against which your understanding will be evaluated.
     """)
-    
     doc_col1, doc_col2 = st.columns([2,1])
     with doc_col1:
         uploaded_file = st.file_uploader("Upload French Revolution study materials (PDF/DOCX/MD)", 
@@ -350,7 +342,6 @@ if (
 ):
     st.session_state.unlocked_pages['GAP_Analysis'] = True
     st.success("🎉 All steps completed! You can now proceed to analyze your understanding of the French Revolution.")
-    
     if st.button("➡️ Continue to Knowledge Gap Analysis", use_container_width=True):
         st.switch_page("pages/1_📊_GAP_Analysis.py")
 
