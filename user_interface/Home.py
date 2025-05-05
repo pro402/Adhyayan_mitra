@@ -105,7 +105,7 @@ with st.container():
                     st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
                     st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
                 else:
-                    st.error("⚠️ Failed to save valid audio file")
+                    st.error("⚠️ Please Retry.")
         with col2:
             if valid_audio_file(st.session_state.file_path):
                 st.audio(st.session_state.file_path)
