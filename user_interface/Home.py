@@ -4,6 +4,7 @@ import os
 import librosa
 from datetime import timedelta
 import tempfile
+import time
 from audio_recorder_streamlit import audio_recorder
 
 # Add the parent directory to the path
@@ -97,15 +98,14 @@ with st.container():
                 pause_threshold=10.0,
             )
             if audio_bytes:
-                # Clear previous state
-                st.session_state.file_path = None
-                st.session_state.duration = None
-            
                 st.toast("🎙️ Recording started. Recording will stop automatically after 10s of silence.")
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
                     tmp_file.write(audio_bytes)
+                    tmp_file.flush()  # Ensure data is written to disk
                     st.session_state.file_path = tmp_file.name
-            
+    
+                # Add a short delay to ensure file is fully written and available
+                time.sleep(3)
                 if valid_audio_file(st.session_state.file_path):
                     st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
                     st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
