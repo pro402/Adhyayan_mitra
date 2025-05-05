@@ -88,7 +88,7 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
-            st.caption("Recording will automatically stop after 10s of pause")
+            st.caption("Recording will automatically stop after 10s of pause, or click the mic to stop recording.")
             audio_bytes = audio_recorder(
                 text="⏺️ Click to record",
                 recording_color="#e8b62c",
