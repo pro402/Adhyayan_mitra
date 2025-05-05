@@ -5,6 +5,8 @@ import librosa
 from datetime import timedelta
 import tempfile
 from audio_recorder_streamlit import audio_recorder
+from io import BytesIO
+from pydub import AudioSegment
 
 # Add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,6 +34,17 @@ for var in session_vars:
 def valid_audio_file(file_path):
     """Validate audio file existence and content"""
     return file_path and os.path.exists(file_path) and librosa.get_duration(path=file_path) > 0
+
+def save_audio_bytes_as_wav(audio_bytes, filename):
+    """Convert audio bytes to a valid WAV file using pydub"""
+    try:
+        # Convert audio bytes to a WAV file
+        audio = AudioSegment.from_file(BytesIO(audio_bytes))
+        audio.export(filename, format="wav")
+        return True
+    except Exception as e:
+        st.error(f"Error converting audio: {str(e)}")
+        return False
 
 st.set_page_config(page_title="Adhyayan Mitra", page_icon="🎓", layout="wide")
 
@@ -88,6 +101,12 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
+            if st.button("🗑️ Clear Recording", disabled=not st.session_state.file_path):
+                st.session_state.file_path = None
+                st.session_state.duration = None
+                st.toast("Recording cleared")
+                st.rerun()
+            
             st.caption("Recording will automatically stop after 10s of pause")
             audio_bytes = audio_recorder(
                 text="⏺️ Click to record",
@@ -96,26 +115,38 @@ with st.container():
                 icon_size="2x",
                 pause_threshold=10.0,
             )
+            
             if audio_bytes:
-                # Clear previous state
-                st.session_state.file_path = None
-                st.session_state.duration = None
-            
-                st.toast("🎙️ Recording started. Recording will stop automatically after 10s of silence.")
+                st.toast("🎙️ Processing recording...")
+                
+                # Save to a temporary WAV file using pydub for proper format
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
-                    tmp_file.write(audio_bytes)
-                    st.session_state.file_path = tmp_file.name
-            
-                if valid_audio_file(st.session_state.file_path):
-                    st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
-                    st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
-                else:
-                    st.error("⚠️ Failed to save valid audio file")
-
+                    # Clear existing recording if there was one
+                    if st.session_state.file_path and os.path.exists(st.session_state.file_path):
+                        try:
+                            os.unlink(st.session_state.file_path)
+                        except:
+                            pass
+                    
+                    # Convert audio bytes to WAV and save
+                    if save_audio_bytes_as_wav(audio_bytes, tmp_file.name):
+                        st.session_state.file_path = tmp_file.name
+                        
+                        if valid_audio_file(st.session_state.file_path):
+                            st.session_state.duration = librosa.get_duration(path=st.session_state.file_path)
+                            st.toast(f"✅ Recording saved ({timedelta(seconds=int(st.session_state.duration))})")
+                            st.rerun()  # Force UI update to show the audio player
+                        else:
+                            st.error("⚠️ Failed to save valid audio file - Format validation failed")
+                    else:
+                        st.error("⚠️ Failed to convert audio to WAV format")
+                
         with col2:
             if valid_audio_file(st.session_state.file_path):
                 st.audio(st.session_state.file_path)
                 st.caption(f"⏱️ Audio duration: {st.session_state.duration:.2f} seconds")
+            elif st.session_state.file_path:
+                st.warning("Audio file exists but may be invalid or too short to process")
     else:  # Upload an audio file
         st.caption("Upload a recording of yourself explaining the French Revolution")
         uploaded_audio = st.file_uploader(
@@ -126,10 +157,27 @@ with st.container():
         if uploaded_audio:
             temp_audio_path = None
             try:
+                # Clear any previous recording
+                if st.session_state.file_path and os.path.exists(st.session_state.file_path):
+                    try:
+                        os.unlink(st.session_state.file_path)
+                    except:
+                        pass
+                
                 file_extension = os.path.splitext(uploaded_audio.name)[1]
                 with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as tmp_file:
                     tmp_file.write(uploaded_audio.getvalue())
                     temp_audio_path = tmp_file.name
+                
+                # For MP3 files, convert to WAV for better compatibility
+                if file_extension.lower() == '.mp3':
+                    wav_path = temp_audio_path.replace('.mp3', '.wav')
+                    sound = AudioSegment.from_mp3(temp_audio_path)
+                    sound.export(wav_path, format="wav")
+                    # Delete the original MP3 temp file
+                    os.unlink(temp_audio_path)
+                    temp_audio_path = wav_path
+                
                 if valid_audio_file(temp_audio_path):
                     st.session_state.file_path = temp_audio_path
                     st.session_state.duration = librosa.get_duration(path=temp_audio_path)
