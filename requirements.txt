@@ -1,6 +1,7 @@
 ipykernel
 sounddevice
 pyaudio
+tornado
 numpy
 pydub
 transformers
