@@ -88,16 +88,16 @@ with st.container():
     if audio_mode == "Record with microphone":
         col1, col2 = st.columns([1,2])
         with col1:
-            st.caption("Recording will automatically stop after 10s of pause, or click the mic to stop recording.")
+            st.caption("Recording will automatically stop after 5s of pause, or click the mic to stop recording.")
             audio_bytes = audio_recorder(
                 text="⏺️ Click to record",
                 recording_color="#e8b62c",
                 neutral_color="#6aa36f",
                 icon_size="2x",
-                pause_threshold=10.0,
+                pause_threshold=5.0,
             )
             if audio_bytes:
-                st.toast("🎙️ Recording started. Recording will stop automatically after 10s of silence.")
+                st.toast("🎙️ Recording started")
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
                     tmp_file.write(audio_bytes)
                     st.session_state.file_path = tmp_file.name
