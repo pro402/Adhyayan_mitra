@@ -2,6 +2,7 @@ ipykernel
 sounddevice
 pyaudio
 tornado
+audio-recorder-streamlit
 numpy
 pydub
 transformers
