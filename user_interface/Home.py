@@ -103,7 +103,7 @@ with st.container():
             
             if audio_bytes:
                 # Save the audio bytes to a temporary file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
                     tmp_file.write(audio_bytes)
                     st.session_state.file_path = tmp_file.name
                 
